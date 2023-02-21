@@ -1,41 +1,28 @@
 # Resource service
 
-The resource service is responsible for handling resources in the system.
+The Resource Service is a RESTful API responsible for managing resources in the system. It should follow the API documentation provided at the following link: [https://courselab.lnu.se/picture-it/api/v1/docs/]. While it is possible to extend the API, the endpoints described in the documentation must still work and provide at least the data specified.
 
-This RESTful API should be implemented to match (in every detail) the API documentation found at:
-[https://courselab.lnu.se/picture-it/api/v1/docs/](https://courselab.lnu.se/picture-it/api/v1/docs/)
+There are a few things to note when implementing the Resource Service:
 
-You are free to extend the API; however, the endpoints described in the documentation must still work and serve at least the data described above.
+- The default maximum payload size for the body-parser JSON in Express is 100kb. However, your application should be able to handle larger images, so the limit should be extended to 500kb using the following code:
 
-## Things to note
+  ```javascript
+  app.use(express.json({ limit: "500kb" }))
+  ```
 
-### Payload maximum
+  For more information, see the Express documentation: [http://expressjs.com/en/api.html#express.json].
 
-The default payload max size in the body-parser JSON in Express is limited to 100kb; however, our application should handle larger images. To do this, we need to extend the limit to 500kb by sending in an option to `express.json()` called "limit":
+- In a microservice architecture, it is recommended that each service runs its instance of MongoDB, even if it is possible to use the same one or an existing one on the production server. This helps to decouple services and make them easier to develop, deploy, and scale independently. To achieve this, you can start different containers of the same image on the production server or localhost, and let the Resource Service connect to port 27017.
 
-```javascript
- app.use(express.json({ limit: "500kb" }))
-```
+  ```bash
+  $ docker run -d -p 27017:27017 --name mongodb-resource mongo:6.0.4
+  54b0c78a016d36b2eca2dfa42a8eeabd1a2596bb6acd2721d21bd57cbc6fc381
 
-Reference: [http://expressjs.com/en/api.html#express.json](http://expressjs.com/en/api.html#express.json)
+  $ docker run -d -p 27018:27017 --name mongodb-auth mongo:6.0.4
+  15ce7744f18deedcfdac35839e3f8b184f2e6c83222e79b5ea89ac561dfbb885
 
-### Multiple MongoDB instances
-
-It is recommended that each service runs its own MongoDB instance on the production server, even though it would be possible to use the same one or an existing one on the production server. The reason for this is that services in microservice architectures should strive to be loosely coupled so that they can be developed, deployed, and scaled independently.
-
-To achieve this, you can start different containers of the same image on the production server or on localhost.
-
-```bash
-$ docker run -d -p 27017:27017 --name mongodb-resource mongo:5.0.6
-54b0c78a016d36b2eca2dfa42a8eeabd1a2596bb6acd2721d21bd57cbc6fc381
-
-$ docker run -d -p 27018:27017 --name mongodb-auth mongo:5.0.6
-15ce7744f18deedcfdac35839e3f8b184f2e6c83222e79b5ea89ac561dfbb885
-
-$ docker ps
-CONTAINER ID   IMAGE         COMMAND                  CREATED         STATUS             PORTS                      NAMES
-15ce7744f18d   mongo:5.0.6   "docker-entrypoint.s…"   8 seconds ago   Up 6 seconds       0.0.0.0:27018->27017/tcp   mongodb-auth
-54b0c78a016d   mongo:5.0.6   "docker-entrypoint.s…"   6 weeks ago     Up About an hour   0.0.0.0:27017->27017/tcp   mongodb-resource
-```
-
-Now you can let the resource service connect to port 27017.
+  $ docker ps
+  CONTAINER ID   IMAGE         COMMAND                  CREATED         STATUS             PORTS                      NAMES
+  15ce7744f18d   mongo:6.0.4   "docker-entrypoint.s…"   8 seconds ago   Up 6 seconds       0.0.0.0:27018->27017/tcp   mongodb-auth
+  54b0c78a016d   mongo:6.0.4   "docker-entrypoint.s…"   6 weeks ago     Up About an hour   0.0.0.0:27017->27017/tcp   mongodb-resource
+  ```

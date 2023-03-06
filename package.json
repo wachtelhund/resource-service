@@ -1,0 +1,38 @@
+{
+  "name": "resource-service",
+  "version": "1.0.0",
+  "description": "The Resource Service is a RESTful API responsible for managing resources in the system. It should follow the API documentation provided at the following link: [https://courselab.lnu.se/picture-it/api/v1/docs/]. While it is possible to extend the API, the endpoints described in the documentation must still work and provide at least the data specified.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "set NODE_ENV=production && node -r dotenv/config src/server.js",
+    "dev": "nodemon --inspect -r dotenv/config src/server.js",
+    "lint": "npx eslint ./src || exit 0",
+    "lint:fix": "npx eslint ./src --fix || exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.lnu.se:1dv026/student/hn222te/assignment-b3-picture-it/resource-service.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@lnu/eslint-config": "^1.1.7",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.25.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsdoc": "^39.3.14",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "nodemon": "^2.0.21"
+  }
+}

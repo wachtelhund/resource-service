@@ -9,7 +9,7 @@ import express from 'express'
 import helmet from 'helmet'
 import logger from 'morgan'
 import { router } from './routes/router.js'
-import { connectDB } from './config/mongoose.js'
+import { connectDB } from '../config/mongoose.js'
 
 try {
   await connectDB()

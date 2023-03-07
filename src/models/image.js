@@ -1,9 +1,7 @@
-import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
-import validator from 'validator'
 
 /**
- * User model.
+ * Image model.
  */
 const schema = new mongoose.Schema({
   imageURL: {
@@ -14,42 +12,41 @@ const schema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: true,
     trim: true
   },
   description: {
     type: String,
-    required: true,
     trim: true
+  },
+  contentType: {
+    type: String,
+    enum: ['image/jpeg', 'image/png', 'image/gif'],
+    required: true
   }
 }, {
   timestamps: true,
-  versionKey: false
+  versionKey: false,
+  toJSON: {
+    /**
+     * Performs a transformation of the resulting object to remove sensitive information.
+     *
+     * @param {object} doc - The mongoose document which is being converted.
+     * @param {object} ret - The plain object representation which has been converted.
+     */
+    transform: function (doc, ret) {
+      delete ret._id
+      delete ret.__v
+    },
+    virtuals: true // ensure virtual fields are serialized
+  }
+
 })
 
-/**
- * Checks user password against database.
- *
- * @param {string} username - Username to check against database.
- * @param {string} password - Plaintext password to check against database.
- * @returns {boolean} True if user exists, false if not.
- */
-schema.statics.isCorrectPassword = async function (username, password) {
-  const user = await User.findOne({ username })
-  const match = await bcrypt.compare(password, user.password)
-  if (!user || !match) {
-    throw new Error('Invalid login.')
-  }
-  return user
-}
+schema.virtual('id').get(function () {
+  return this._id.toHexString()
+})
 
 schema.pre('save', async function () {
-  if (!validator.isEmail(this.email)) {
-    const error = new Error('Invalid email.')
-    error.status = 400
-    throw error
-  }
-  this.password = await bcrypt.hash(this.password, 10)
 })
 
-export const User = mongoose.model('User', schema)
+export const Image = mongoose.model('Image', schema)

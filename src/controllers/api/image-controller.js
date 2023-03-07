@@ -37,4 +37,6 @@ export class ImageController {
   async deleteOne (req, res, next) {
     console.log('deleteOne()')
   }
+
+  async loadImages (req, res, next) {}
 }

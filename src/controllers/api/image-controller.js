@@ -33,19 +33,24 @@ export class ImageController {
    * @param {Function} next - The next middleware function.
    */
   async getAll (req, res, next) {
-    const response = await fetch(this.#imageServiceUrl, {
-      method: 'GET',
-      headers: {
-        'X-API-Private-Token': process.env.IMAGE_SERVICE_TOKEN
-      }
-    })
-    if (!response.ok) {
-      next(createError(500, 'Internal server error'))
+    try {
+      const images = await (await Image.find({})).map(image => {
+        return {
+          id: image.id,
+          imageURL: image.imageURL,
+          contentType: image.contentType,
+          location: image.location,
+          description: image.description,
+          createdAt: image.createdAt,
+          updatedAt: image.updatedAt
+        }
+      })
+      res
+        .status(200)
+        .json({ images })
+    } catch (error) {
+      next(createError(500))
     }
-    const images = await response.json()
-    res
-      .status(200)
-      .json({ images })
   }
 
   /**
@@ -63,7 +68,9 @@ export class ImageController {
         contentType: req.body.contentType
       }
       if (!body.data || !body.contentType) {
-        throw new Error('Missing data or contentType in body')
+        const error = new Error('Missing data or contentType in body')
+        error.status = 400
+        throw error
       }
       const response = await fetch(this.#imageServiceUrl, {
         method: 'POST',
@@ -74,7 +81,9 @@ export class ImageController {
         body: JSON.stringify(body)
       })
       if (!response.ok) {
-        throw new Error('Bad request')
+        const error = new Error('Bad request')
+        error.status = 400
+        throw error
       }
       const data = await response.json()
       const image = new Image({
@@ -90,7 +99,8 @@ export class ImageController {
       await image.save()
       res.status(201).json(image)
     } catch (error) {
-      next(createError(400, error.message))
+      const status = error.status || 500
+      next(createError(status, error.message))
     }
   }
 

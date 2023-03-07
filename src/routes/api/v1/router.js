@@ -44,7 +44,7 @@ const authenticate = (req, res, next) => {
     }
     next()
   } catch (error) {
-    next(createError(401, 'Unauthorized'))
+    next(createError(401, 'Accesstoken is missing or invalid'))
   }
 }
 

@@ -65,31 +65,38 @@ const hasPermission = (req, res, next, permissionLevel) => {
   }
 }
 
+router.param('id', (req, res, next, id) => controller.attachImage(req, res, next, id))
+
 router.get('/images',
   authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.READ),
   (req, res, next) => controller.getAll(req, res, next)
 )
+
 router.post('/images',
   authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.CREATE),
-  (req, res, next) => controller.postAll(req, res, next)
+  (req, res, next) => controller.postImage(req, res, next)
 )
+
 router.get('/images/:id',
   authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.READ),
   (req, res, next) => controller.getOne(req, res, next)
 )
+
 router.put('/images/:id',
   authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.UPDATE),
   (req, res, next) => controller.putOne(req, res, next)
 )
+
 router.patch('/images/:id',
   authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.UPDATE),
   (req, res, next) => controller.patchOne(req, res, next)
 )
+
 router.delete('/images/:id',
   authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.DELETE),

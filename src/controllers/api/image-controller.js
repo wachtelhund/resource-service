@@ -15,12 +15,11 @@ export class ImageController {
    * @param {number} id - The id of the image to attach.
    */
   async attachImage (req, res, next, id) {
-    const response = await fetch(`${this.#imageServiceUrl}/${id}`)
-    if (response.ok) {
-      const image = await response.json()
+    try {
+      const image = await Image.findById(id)
       req.image = image
       next()
-    } else {
+    } catch (error) {
       next(createError(404, 'Image not found'))
     }
   }
@@ -105,10 +104,9 @@ export class ImageController {
   }
 
   async getOne (req, res, next) {
-    console.log('getOne()')
     res
       .status(200)
-      .json({ message: 'getOne()' })
+      .json(req.image)
   }
 
   async putOne (req, res, next) {

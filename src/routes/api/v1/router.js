@@ -57,7 +57,7 @@ const authenticate = (req, res, next) => {
  * @param {number} permissionLevel - The required permission level.
  */
 const hasPermission = (req, res, next, permissionLevel) => {
-  console.log(req.user.permissionLevel, permissionLevel);
+  console.log(req.user.permissionLevel, permissionLevel)
   if (!(req.user.permissionLevel >= permissionLevel)) {
     next(createError(403, 'Forbidden'))
   } else {
@@ -65,40 +65,36 @@ const hasPermission = (req, res, next, permissionLevel) => {
   }
 }
 
+router.use(authenticate)
+
 router.param('id', (req, res, next, id) => controller.attachImage(req, res, next, id))
 
 router.get('/images',
-  authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.READ),
   (req, res, next) => controller.getAll(req, res, next)
 )
 
 router.post('/images',
-  authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.CREATE),
   (req, res, next) => controller.postImage(req, res, next)
 )
 
 router.get('/images/:id',
-  authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.READ),
   (req, res, next) => controller.getOne(req, res, next)
 )
 
 router.put('/images/:id',
-  authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.UPDATE),
   (req, res, next) => controller.putOne(req, res, next)
 )
 
 router.patch('/images/:id',
-  authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.UPDATE),
   (req, res, next) => controller.patchOne(req, res, next)
 )
 
 router.delete('/images/:id',
-  authenticate,
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.DELETE),
   (req, res, next) => controller.deleteOne(req, res, next)
 )

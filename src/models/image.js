@@ -22,6 +22,10 @@ const schema = new mongoose.Schema({
     type: String,
     enum: ['image/jpeg', 'image/png', 'image/gif'],
     required: true
+  },
+  id: {
+    type: String,
+    unique: true
   }
 }, {
   timestamps: true,
@@ -36,17 +40,17 @@ const schema = new mongoose.Schema({
     transform: function (doc, ret) {
       delete ret._id
       delete ret.__v
-    },
-    virtuals: true // ensure virtual fields are serialized
+    }
   }
 
 })
 
-schema.virtual('id').get(function () {
-  return this._id.toHexString()
-})
+// schema.virtual('id').get(function () {
+//   return this._id.toHexString()
+// })
 
 schema.pre('save', async function () {
+  this.id = this._id.toHexString()
 })
 
 export const Image = mongoose.model('Image', schema)

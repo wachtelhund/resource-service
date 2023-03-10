@@ -75,6 +75,7 @@ router.get('/images',
 )
 
 router.post('/images',
+  (req, res, next) => controller.validateImage(req, res, next),
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.CREATE),
   (req, res, next) => controller.postImage(req, res, next)
 )
@@ -85,11 +86,13 @@ router.get('/images/:id',
 )
 
 router.put('/images/:id',
+  (req, res, next) => controller.validateImage(req, res, next),
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.UPDATE),
   (req, res, next) => controller.putOne(req, res, next)
 )
 
 router.patch('/images/:id',
+  (req, res, next) => controller.validateImage(req, res, next),
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.UPDATE),
   (req, res, next) => controller.patchOne(req, res, next)
 )

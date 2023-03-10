@@ -6,7 +6,7 @@ import sharp from 'sharp'
  * Controller for images.
  */
 export class ImageController {
-  #imageServiceUrl = 'https://courselab.lnu.se/picture-it/images/api/v1/images'
+  #imageServiceUrl = 'https://courselab.lnu.se/picture-it/images/api/v1/images/'
   /**
    * Attaches an image to the request object.
    *
@@ -18,6 +18,9 @@ export class ImageController {
   async attachImage (req, res, next, id) {
     try {
       const image = await Image.findOne({ id })
+      if (!image) {
+        throw new Error('Not found')
+      }
       req.image = image
       next()
     } catch (error) {
@@ -41,7 +44,32 @@ export class ImageController {
       }
       next()
     } catch (error) {
-      next(createError(422, 'Invalid image data or format'))
+      next(createError(422, 'Invalid image data'))
+    }
+  }
+
+  /**
+   * Updates an image in the image service.
+   *
+   * @param {object} req - The request object.
+   */
+  async updateImage (req) {
+    const body = {
+      data: req.image.data,
+      contentType: req.image.contentType
+    }
+    const response = await fetch(`${this.#imageServiceUrl + req.image.id}`, {
+      method: req.method,
+      headers: {
+        'X-API-Private-Token': process.env.IMAGE_SERVICE_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+    if (!response.ok) {
+      const error = new Error('Bad request')
+      error.status = 400
+      throw error
     }
   }
 
@@ -105,8 +133,6 @@ export class ImageController {
         throw error
       }
       const data = await response.json()
-      console.log('RESPONSE ID ', data.id);
-      console.log('RESPONSE URL ', data.imageUrl);
       const image = new Image({
         imageURL: data.imageUrl,
         contentType: req.body.contentType,
@@ -118,7 +144,6 @@ export class ImageController {
       })
 
       await image.save()
-      console.log('SAVED ID ', image.id);
       res.status(201).json(image)
     } catch (error) {
       const status = error.status || 500
@@ -148,46 +173,82 @@ export class ImageController {
    */
   async putOne (req, res, next) {
     try {
-      req.image.location = req.body.location || req.image.location
-      req.image.description = req.body.description || req.image.description
-      req.image.contentType = req.body.contentType ? req.body.contentType : req.image.contentType
-      await req.image.save()
-      const body = {
-        data: req.body.data,
-        contentType: req.image.contentType
-      }
-      const response = await fetch(`${this.#imageServiceUrl}/${req.image.id}`, {
-        method: 'PUT',
-        headers: {
-          'X-API-Private-Token': process.env.IMAGE_SERVICE_TOKEN,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      })
-      if (!response.ok) {
-        const error = new Error('Bad request')
+      const { location, description, contentType, data } = req.body
+      if (!location || !description || !contentType || !data) {
+        const error = new Error('Missing location, description, contentType or data in body. If you want to partially update, use PATCH.')
         error.status = 400
         throw error
       }
-      res
-        .status(204)
-        .json({ message: 'putOne()' })
+      req.image.location = location
+      req.image.description = description
+      req.image.contentType = contentType
+      req.image.data = data
+      await req.image.save()
+      await this.updateImage(req)
+      res.sendStatus(204)
     } catch (error) {
       const status = error.status || 500
       next(createError(status, error.message))
     }
   }
 
+  /**
+   * Partially updates an image.
+   *
+   * @param {object} req - The request object.
+   * @param {object} res - The response object.
+   * @param {Function} next - The next middleware function.
+   */
   async patchOne (req, res, next) {
-    console.log('patchOne()')
-    res
-      .status(200)
-      .json({ message: 'patchOne()' })
+    try {
+      const { location, description, contentType, data } = req.body
+
+      if (!location && !description && !contentType && !data) {
+        const error = new Error('At least one field must be present to update')
+        error.status = 400
+        throw error
+      }
+
+      if (location) req.image.location = location
+      if (description) req.image.description = description
+      if (contentType) req.image.contentType = contentType
+      if (data) req.image.data = data
+
+      await req.image.save()
+      await this.updateImage(req)
+      res.sendStatus(204)
+    } catch (error) {
+      const status = error.status || 500
+      next(createError(status, error.message))
+    }
   }
 
+  /**
+   * Deletes an image.
+   *
+   * @param {object} req - The request object.
+   * @param {object} res - The response object.
+   * @param {Function} next - The next middleware function.
+   */
   async deleteOne (req, res, next) {
-    console.log('deleteOne()')
+    try {
+      const response = await fetch(this.#imageServiceUrl + req.image.id, {
+        method: 'DELETE',
+        headers: {
+          'X-API-Private-Token': process.env.IMAGE_SERVICE_TOKEN,
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!response.ok) {
+        const error = new Error('Bad request')
+        error.status = 400
+        throw error
+      }
+      await Image.deleteOne({ _id: req.image.id })
+      res.sendStatus(204)
+    } catch (error) {
+      const status = error.status || 500
+      next(createError(status, error.message))
+    }
   }
-
-  async loadImages (req, res, next) {}
 }

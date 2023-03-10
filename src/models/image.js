@@ -12,16 +12,19 @@ const schema = new mongoose.Schema({
   },
   location: {
     type: String,
-    trim: true
+    trim: true,
+    maxLength: 40
   },
   description: {
     type: String,
-    trim: true
+    trim: true,
+    maxLength: 80
   },
   contentType: {
     type: String,
     enum: ['image/jpeg', 'image/png', 'image/gif'],
-    required: true
+    required: true,
+    trim: true
   },
   id: {
     type: String,
@@ -44,10 +47,6 @@ const schema = new mongoose.Schema({
   }
 
 })
-
-// schema.virtual('id').get(function () {
-//   return this._id.toHexString()
-// })
 
 schema.pre('save', async function () {
   this.id = this._id.toHexString()

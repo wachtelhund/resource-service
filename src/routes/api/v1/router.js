@@ -45,7 +45,7 @@ const authenticate = (req, res, next) => {
     }
     next()
   } catch (error) {
-    next(createError(401, 'Accesstoken is missing or invalid'))
+    next(createError(401, 'Accesstoken is missing or invalid. Please go to /api/v1/auth/login to get a new one or /api/v1/auth/register to create a new user.'))
   }
 }
 

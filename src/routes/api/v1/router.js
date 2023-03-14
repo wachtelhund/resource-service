@@ -70,6 +70,8 @@ router.use(authenticate)
 
 router.param('id', (req, res, next, id) => controller.attachImage(req, res, next, id))
 
+router.get('/', (req, res, next) => res.json({ message: 'Welcome to the resource service' }))
+
 router.get('/images',
   (req, res, next) => hasPermission(req, res, next, PermissionLevels.READ),
   (req, res, next) => controller.getAll(req, res, next)

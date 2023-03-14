@@ -18,13 +18,28 @@ export class ImageController {
   async attachImage (req, res, next, id) {
     try {
       const image = await Image.findOne({ id })
+      if (image.userId !== req.user.userId) {
+        const error = new Error('Not required permissions for the resource.')
+        error.status = 403
+        throw error
+      }
       if (!image) {
-        throw new Error('Not found')
+        const error = new Error('Not found')
+        error.status = 404
+        throw error
+      }
+      req.image = {
+        id: image.id,
+        imageURL: image.imageURL,
+        location: image.location,
+        description: image.description,
+        createdAt: image.createdAt,
+        updatedAt: image.updatedAt
       }
       req.image = image
       next()
     } catch (error) {
-      next(createError(404, 'Image not found'))
+      next(createError(error.status || 500, error.message))
     }
   }
 
@@ -82,11 +97,10 @@ export class ImageController {
    */
   async getAll (req, res, next) {
     try {
-      const images = await (await Image.find({})).map(image => {
+      const images = await (await Image.find({ userId: req.user.userId })).map(image => {
         return {
           id: image.id,
           imageURL: image.imageURL,
-          contentType: image.contentType,
           location: image.location,
           description: image.description,
           createdAt: image.createdAt,
@@ -95,7 +109,7 @@ export class ImageController {
       })
       res
         .status(200)
-        .json({ images })
+        .json(images)
     } catch (error) {
       next(createError(500))
     }
@@ -140,7 +154,8 @@ export class ImageController {
         location: req.body.location,
         description: req.body.description,
         createdAt: data.createdAt,
-        updatedAt: data.updatedAt
+        updatedAt: data.updatedAt,
+        userId: req.user.userId
       })
 
       await image.save()

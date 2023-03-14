@@ -29,6 +29,11 @@ const schema = new mongoose.Schema({
   id: {
     type: String,
     unique: true
+  },
+  userId: {
+    type: String,
+    required: true,
+    unique: true
   }
 }, {
   timestamps: true,

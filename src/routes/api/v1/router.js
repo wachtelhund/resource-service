@@ -40,7 +40,8 @@ const authenticate = (req, res, next) => {
       firstName: payload.given_name,
       lastName: payload.family_name,
       email: payload.email,
-      permissionLevel: payload.x_permission_level
+      permissionLevel: payload.x_permission_level,
+      userId: payload.x_user_id
     }
     next()
   } catch (error) {

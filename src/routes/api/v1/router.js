@@ -8,7 +8,6 @@ import express from 'express'
 import { ImageController } from '../../../controllers/api/image-controller.js'
 import jwt from 'jsonwebtoken'
 import createError from 'http-errors'
-import fs from 'fs'
 
 const controller = new ImageController()
 

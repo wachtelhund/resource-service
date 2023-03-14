@@ -32,9 +32,7 @@ const authenticate = (req, res, next) => {
   try {
     const type = req.headers.authorization.split(' ')[0]
     const token = req.headers.authorization.split(' ')[1]
-    const cert = fs.readFileSync(process.env.ACCESS_TOKEN_SECRET)
-    const payload = jwt.verify(token, cert)
-    console.log(cert);
+    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
     if (!type === 'Bearer' || !payload) {
       throw new Error()
     }

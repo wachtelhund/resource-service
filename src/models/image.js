@@ -32,8 +32,7 @@ const schema = new mongoose.Schema({
   },
   userId: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   }
 }, {
   timestamps: true,

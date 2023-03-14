@@ -8,6 +8,7 @@ import express from 'express'
 import { ImageController } from '../../../controllers/api/image-controller.js'
 import jwt from 'jsonwebtoken'
 import createError from 'http-errors'
+import fs from 'fs'
 
 const controller = new ImageController()
 
@@ -31,7 +32,8 @@ const authenticate = (req, res, next) => {
   try {
     const type = req.headers.authorization.split(' ')[0]
     const token = req.headers.authorization.split(' ')[1]
-    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    const cert = fs.readFileSync(process.env.ACCESS_TOKEN_SECRET)
+    const payload = jwt.verify(token, cert)
     if (!type === 'Bearer' || !payload) {
       throw new Error()
     }
